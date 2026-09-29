@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slrag"
+version = "0.1.0"
+description = "Streaming Hybrid Retrieval-Augmented Generation Engine"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "click>=8.0.0",
+    "numpy>=1.24.0",
+    "pytest>=7.0.0",
+    "httpx>=0.24.0"
+]
+
+[project.scripts]
+slrag = "slrag.cli:cli"

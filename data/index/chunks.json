@@ -1,0 +1,122 @@
+[
+  {
+    "chunk_id": "DOC001\u00a7intro",
+    "doc_id": "DOC001",
+    "section_id": "intro",
+    "section_title": "Introduction to Qubits",
+    "text": "Quantum computing harnesses the principles of quantum mechanics, including superposition and entanglement, to perform computations exponentially faster for certain problems. Unlike classical bits which exist strictly in state 0 or 1, a qubit exists as a linear combination alpha|0> + beta|1>. Quantum gates manipulate these complex amplitudes unitarily to perform algorithms such as Shor's factoring and Grover's search.",
+    "token_count": 74,
+    "char_start": 0,
+    "char_end": 420,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Introduction to Qubits"
+    },
+    "chunk_hash": "955aa25e80c2866539a4b6a9394a38588a52e9ff280554b2a774ef5572005b11"
+  },
+  {
+    "chunk_id": "DOC001\u00a7error_correction",
+    "doc_id": "DOC001",
+    "section_id": "error_correction",
+    "section_title": "Surface Codes and Fault Tolerance",
+    "text": "Fault-tolerant quantum computing requires quantum error correction codes to protect fragile quantum states from environmental decoherence and gate infidelities. The surface code is the leading architecture, arranging physical qubits in a 2D square lattice with alternating syndrome measurements of star and plaquette stabilizers (X and Z stabilizers). A threshold error rate of approximately 1 percent makes it feasible for scalable topological quantum computers.",
+    "token_count": 71,
+    "char_start": 0,
+    "char_end": 463,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Surface Codes and Fault Tolerance"
+    },
+    "chunk_hash": "c87b6f405978c8a6ebd93ff71a0bb0b3e54bd636c394fb5f38cd0f45eac8ad81"
+  },
+  {
+    "chunk_id": "DOC002\u00a7raft_consensus",
+    "doc_id": "DOC002",
+    "section_id": "raft_consensus",
+    "section_title": "Raft Leader Election and Log Replication",
+    "text": "Raft is a distributed consensus algorithm designed for understandability. A Raft cluster consists of several nodes, typically five, allowing the system to tolerate two failures. Nodes are in one of three states: Leader, Follower, or Candidate. In normal operation, there is exactly one leader and all other nodes are followers. The leader accepts log entries from clients, replicates them across a majority quorum of followers, and applies committed entries to its state machine.",
+    "token_count": 86,
+    "char_start": 0,
+    "char_end": 479,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Raft Leader Election and Log Replication"
+    },
+    "chunk_hash": "010db04208500259d299a7bf925dbf3736d90ffe4bfb2b64802e8b4882e4a275"
+  },
+  {
+    "chunk_id": "DOC002\u00a7vector_clocks",
+    "doc_id": "DOC002",
+    "section_id": "vector_clocks",
+    "section_title": "Causality and Logical Vector Clocks",
+    "text": "Vector clocks are an algorithm for generating a partial ordering of events in a distributed system and detecting causality violations. Each node maintains an integer vector of size N, incrementing its own index on local events and including its vector clock in transmitted network messages. When receiving a message, a node takes the element-wise maximum across all entries and increments its own clock, thereby preserving the Lamport happens-before relation.",
+    "token_count": 79,
+    "char_start": 0,
+    "char_end": 459,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Causality and Logical Vector Clocks"
+    },
+    "chunk_hash": "fc376475e831373366577427a0b9acf7ce285d246eb0c66ac7513e6ab6b5d443"
+  },
+  {
+    "chunk_id": "DOC003\u00a7lsm_trees",
+    "doc_id": "DOC003",
+    "section_id": "lsm_trees",
+    "section_title": "Log-Structured Merge Trees and Compaction",
+    "text": "Log-Structured Merge Trees (LSM Trees) are write-optimized storage engines widely used in systems like RocksDB and Cassandra. Writes are initially appended to a sequential write-ahead log (WAL) and inserted into an in-memory sorted MemTable. When the MemTable fills up, it is flushed to disk as an immutable SSTable (Sorted String Table). Background tiered or leveled compaction merges overlapping SSTables and purges tombstoned keys.",
+    "token_count": 82,
+    "char_start": 0,
+    "char_end": 434,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Log-Structured Merge Trees and Compaction"
+    },
+    "chunk_hash": "b456cd052a3a1890463094e47013ce938ede11d11055420383edc318105d1218"
+  },
+  {
+    "chunk_id": "DOC003\u00a7b_trees",
+    "doc_id": "DOC003",
+    "section_id": "b_trees",
+    "section_title": "B-Tree and B+Tree Page Management",
+    "text": "B+Trees organize data hierarchically into fixed-size disk pages (typically 4KB to 16KB). Internal nodes store keys and child page pointers, while all records reside in leaf nodes connected as a doubly-linked list. This layout provides logarithmic lookup time O(log N) and efficient sequential range scans, making B+Trees the standard indexing structure in relational engines like PostgreSQL and MySQL InnoDB.",
+    "token_count": 77,
+    "char_start": 0,
+    "char_end": 408,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "B-Tree and B+Tree Page Management"
+    },
+    "chunk_hash": "a9be1c37f954d9914712b916d13435b275fd83b6b014166771b1a194963321d7"
+  },
+  {
+    "chunk_id": "DOC004\u00a7hnsw_indexing",
+    "doc_id": "DOC004",
+    "section_id": "hnsw_indexing",
+    "section_title": "Hierarchical Navigable Small World Graphs",
+    "text": "HNSW (Hierarchical Navigable Small World) is a graph-based algorithm for approximate nearest neighbor (ANN) search in high-dimensional vector spaces. It constructs a multi-layer graph where upper layers have longer skip-links for fast routing and lower layers contain denser local connections. HNSW provides sub-linear logarithmic search time with high recall for dense vector embeddings like BGE and OpenAI text-embedding.",
+    "token_count": 77,
+    "char_start": 0,
+    "char_end": 423,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Hierarchical Navigable Small World Graphs"
+    },
+    "chunk_hash": "555e059f15ff9c640096b76a23f9cab5c64a1f339360439a89b3d120bef28198"
+  },
+  {
+    "chunk_id": "DOC004\u00a7bm25_lexical",
+    "doc_id": "DOC004",
+    "section_id": "bm25_lexical",
+    "section_title": "Okapi BM25 Ranking and Inverted Indices",
+    "text": "Okapi BM25 is a non-linear term frequency and inverse document frequency (IDF) ranking function. It uses parameters k1 to control term frequency saturation and b to tune document length normalization. BM25 excels at exact keyword matching, rare entity lookup, and acronym matching where semantic dense models often suffer from vocabulary mismatch or out-of-vocabulary hallucinations.",
+    "token_count": 67,
+    "char_start": 0,
+    "char_end": 383,
+    "chunk_index": 0,
+    "metadata": {
+      "section_title": "Okapi BM25 Ranking and Inverted Indices"
+    },
+    "chunk_hash": "ed0cde8600e47e8e22cbeba1cfc65fe17d568ef22b2ed1f81aec59a42d44c092"
+  }
+]

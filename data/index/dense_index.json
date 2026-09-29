@@ -1,0 +1,1 @@
+{"doc_ids": ["DOC001\u00a7intro", "DOC001\u00a7error_correction", "DOC002\u00a7raft_consensus", "DOC002\u00a7vector_clocks", "DOC003\u00a7lsm_trees", "DOC003\u00a7b_trees", "DOC004\u00a7hnsw_indexing", "DOC004\u00a7bm25_lexical"], "dim": 384, "model_name": "BAAI/bge-small-en-v1.5"}

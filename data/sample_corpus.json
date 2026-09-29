@@ -1,0 +1,66 @@
+[
+  {
+    "doc_id": "DOC001",
+    "title": "Quantum Computing Fundamentals",
+    "sections": [
+      {
+        "section_id": "intro",
+        "title": "Introduction to Qubits",
+        "text": "Quantum computing harnesses the principles of quantum mechanics, including superposition and entanglement, to perform computations exponentially faster for certain problems. Unlike classical bits which exist strictly in state 0 or 1, a qubit exists as a linear combination alpha|0> + beta|1>. Quantum gates manipulate these complex amplitudes unitarily to perform algorithms such as Shor's factoring and Grover's search."
+      },
+      {
+        "section_id": "error_correction",
+        "title": "Surface Codes and Fault Tolerance",
+        "text": "Fault-tolerant quantum computing requires quantum error correction codes to protect fragile quantum states from environmental decoherence and gate infidelities. The surface code is the leading architecture, arranging physical qubits in a 2D square lattice with alternating syndrome measurements of star and plaquette stabilizers (X and Z stabilizers). A threshold error rate of approximately 1 percent makes it feasible for scalable topological quantum computers."
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC002",
+    "title": "Distributed Systems and Consensus Protocols",
+    "sections": [
+      {
+        "section_id": "raft_consensus",
+        "title": "Raft Leader Election and Log Replication",
+        "text": "Raft is a distributed consensus algorithm designed for understandability. A Raft cluster consists of several nodes, typically five, allowing the system to tolerate two failures. Nodes are in one of three states: Leader, Follower, or Candidate. In normal operation, there is exactly one leader and all other nodes are followers. The leader accepts log entries from clients, replicates them across a majority quorum of followers, and applies committed entries to its state machine."
+      },
+      {
+        "section_id": "vector_clocks",
+        "title": "Causality and Logical Vector Clocks",
+        "text": "Vector clocks are an algorithm for generating a partial ordering of events in a distributed system and detecting causality violations. Each node maintains an integer vector of size N, incrementing its own index on local events and including its vector clock in transmitted network messages. When receiving a message, a node takes the element-wise maximum across all entries and increments its own clock, thereby preserving the Lamport happens-before relation."
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC003",
+    "title": "Modern Database Storage Engines",
+    "sections": [
+      {
+        "section_id": "lsm_trees",
+        "title": "Log-Structured Merge Trees and Compaction",
+        "text": "Log-Structured Merge Trees (LSM Trees) are write-optimized storage engines widely used in systems like RocksDB and Cassandra. Writes are initially appended to a sequential write-ahead log (WAL) and inserted into an in-memory sorted MemTable. When the MemTable fills up, it is flushed to disk as an immutable SSTable (Sorted String Table). Background tiered or leveled compaction merges overlapping SSTables and purges tombstoned keys."
+      },
+      {
+        "section_id": "b_trees",
+        "title": "B-Tree and B+Tree Page Management",
+        "text": "B+Trees organize data hierarchically into fixed-size disk pages (typically 4KB to 16KB). Internal nodes store keys and child page pointers, while all records reside in leaf nodes connected as a doubly-linked list. This layout provides logarithmic lookup time O(log N) and efficient sequential range scans, making B+Trees the standard indexing structure in relational engines like PostgreSQL and MySQL InnoDB."
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC004",
+    "title": "Neural Information Retrieval and Vector Search",
+    "sections": [
+      {
+        "section_id": "hnsw_indexing",
+        "title": "Hierarchical Navigable Small World Graphs",
+        "text": "HNSW (Hierarchical Navigable Small World) is a graph-based algorithm for approximate nearest neighbor (ANN) search in high-dimensional vector spaces. It constructs a multi-layer graph where upper layers have longer skip-links for fast routing and lower layers contain denser local connections. HNSW provides sub-linear logarithmic search time with high recall for dense vector embeddings like BGE and OpenAI text-embedding."
+      },
+      {
+        "section_id": "bm25_lexical",
+        "title": "Okapi BM25 Ranking and Inverted Indices",
+        "text": "Okapi BM25 is a non-linear term frequency and inverse document frequency (IDF) ranking function. It uses parameters k1 to control term frequency saturation and b to tune document length normalization. BM25 excels at exact keyword matching, rare entity lookup, and acronym matching where semantic dense models often suffer from vocabulary mismatch or out-of-vocabulary hallucinations."
+      }
+    ]
+  }
+]
