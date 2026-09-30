@@ -156,3 +156,30 @@ class MetricsSnapshot(BaseModel):
     p50_latency_ms: float
     p95_latency_ms: float
     events_by_type: Dict[str, int]
+
+class CascadeTriggerEvent(BaseEvent):
+    """Event emitted when the cascade controller evaluates or triggers speculative retrieval."""
+    event_type: Literal["cascade_trigger"] = "cascade_trigger"
+    turn_id: str
+    token_index: int
+    confidence: float
+    entropy: float
+    state: str
+    trigger_type: str
+
+
+class SpeculativeCacheEvent(BaseEvent):
+    """Event emitted for speculative cache operations."""
+    event_type: Literal["speculative_cache"] = "speculative_cache"
+    action: str
+    query: str
+    chunk_ids: List[str] = Field(default_factory=list)
+
+
+class SpeculationOutcomeEvent(BaseEvent):
+    """Event emitted when speculative retrieval is used or invalidated."""
+    event_type: Literal["speculation_outcome"] = "speculation_outcome"
+    turn_id: str
+    outcome: str
+    reason: str
+

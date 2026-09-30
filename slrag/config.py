@@ -74,6 +74,24 @@ class SessionConfig:
 
 
 @dataclass(frozen=True)
+class CascadeConfig:
+    enabled: bool = True
+    confidence_threshold: float = 0.72
+    entropy_threshold: float = 0.38
+    min_token_boundary: int = 4
+    cache_ttl_ms: int = 5000
+    cache_max_size: int = 128
+
+
+@dataclass(frozen=True)
+class MultiIntentConfig:
+    enabled: bool = True
+    suppression_threshold: float = 0.45
+    enable_parallel_retrieval: bool = True
+    restart_on_late_detail: bool = False
+
+
+@dataclass(frozen=True)
 class AppConfig:
     chunker: ChunkerConfig = field(default_factory=ChunkerConfig)
     bm25: BM25Config = field(default_factory=BM25Config)
@@ -84,6 +102,8 @@ class AppConfig:
     llm: LLMConfig = field(default_factory=LLMConfig)
     telemetry: TelemetryConfig = field(default_factory=TelemetryConfig)
     session: SessionConfig = field(default_factory=SessionConfig)
+    cascade: CascadeConfig = field(default_factory=CascadeConfig)
+    multi_intent: MultiIntentConfig = field(default_factory=MultiIntentConfig)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
