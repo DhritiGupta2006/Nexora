@@ -36,3 +36,6 @@ Thumbs.db
 
 # Dense retrieval model (scripts/fetch_models.py)
 models/
+
+# Office temp/lock files
+~$*

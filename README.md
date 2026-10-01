@@ -86,9 +86,17 @@ Retrieval fuses BM25 with sentence-transformers `all-MiniLM-L6-v2` embeddings (r
 
 ## Documentation
 
-- [docs/architecture_brief.md](docs/architecture_brief.md): architecture, data flow, trigger logic, grounding, trade-offs, deployment, limitations
-- [docs/benchmark_report.md](docs/benchmark_report.md): full metric table, gates G1–G6, ablations A1–A5, failure analysis
+- [docs/architecture_brief.pdf](docs/architecture_brief.pdf): architecture, data flow, trigger logic, grounding, trade-offs, deployment, limitations
+- [docs/benchmark_report.pdf](docs/benchmark_report.pdf): full metric table, gates G1–G6, ablations A1–A5, failure analysis
 - [data/CORPUS_README.md](data/CORPUS_README.md): the synthetic Nexora corpus
+
+## Submission Documents
+
+- [docs/SRM_Nexora_Submission.pptx](docs/SRM_Nexora_Submission.pptx): presentation slides
+- [docs/architecture_brief.pdf](docs/architecture_brief.pdf): architecture brief (≤ 6 pages)
+- [docs/benchmark_report.pdf](docs/benchmark_report.pdf): benchmark report with gates G1–G6 and ablations A1–A5
+- [docs/AI_DISCLOSURE.docx](docs/AI_DISCLOSURE.docx): AI usage disclosure form
+- Demo recording: [Google Drive folder](https://drive.google.com/drive/folders/1db1zRsrnWxcoQWzWN68MakRYZjPe73GJ?usp=sharing)
 
 ## Layout
 
