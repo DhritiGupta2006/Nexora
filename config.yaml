@@ -14,7 +14,7 @@ bm25:
   epsilon: 0.25
 
 dense:
-  model_name: BAAI/bge-small-en-v1.5
+  model_name: sentence-transformers/all-MiniLM-L6-v2   # downloaded into models/ by scripts/fetch_models.py
   embedding_dim: 384
   normalize_embeddings: true
   batch_size: 32
@@ -24,13 +24,18 @@ rrf:
   weight_bm25: 0.5
   weight_dense: 0.5
 
-# Sufficiency gate: answerable iff dense_top1 >= dense_top1 AND coverage >= coverage.
+# Sufficiency gate: answerable iff dense_top1 >= dense_top1 AND coverage >= coverage. dense_top1 is the
+# retrieval model's cosine mapped to [0, 1]. Calibrated on the tune split with all-MiniLM-L6-v2
+# (scripts/calibrate_uncertainty.py, objective: F1 of the uncertainty flag): dense_top1 0.55 and an empty
+# uncertain band give P = R = 1.0 on tune; raising dense_top1 suppresses answerable sub-intents.
 sufficiency:
   dense_top1: 0.55
   coverage: 0.50
+  uncertain_low: 0.50     # answered but flagged uncertain when coverage is in [uncertain_low, uncertain_high)
+  uncertain_high: 0.50    # calibrated on tune (scripts/calibrate_uncertainty.py): an empty band maximizes F1
 
-# Fail-closed verifier thresholds. The roadmap suggests lexical 0.60 / semantic 0.70 for real
-# BGE embeddings; these values are calibrated for the current placeholder embedder.
+# Fail-closed verifier thresholds. The semantic check compares hashed n-gram vectors (surface overlap,
+# slrag.retrieval.dense.generate_bge_small_embedding), not the retrieval model; these values are calibrated on it.
 verifier:
   lexical: 0.30
   semantic: 0.65
@@ -80,11 +85,10 @@ multi_intent:
 controller:
   mode: cascade
   min_content_tokens: 4
-  # recalibrated post per-clause retrieval fix (tune split only, seed 13; scripts/calibrate.py --split tune;
+  # recalibrated with the all-MiniLM-L6-v2 retriever (tune split only, seed 13; scripts/calibrate.py --split tune;
   # grid new_info_cos {0.74,0.78,0.82,0.86} x stable_cos {0.78,0.82,0.85,0.88}; rule: false_trigger_rate == 0,
-  # then max early_retrieval_rate). Every point reaches G2 on tune (0.962-0.983). Chosen (0.86, 0.82): tune early
-  # 0.9826, false_trigger 0.0000, wasted 0.2348, recall@10 0.9186, ttft_p50 385 ms. (0.82, *) is within 0.0008 on
-  # early retrieval with less wasted speculation (0.2000). Before per-clause retrieval the best tune point was 0.7890.
+  # then max early_retrieval_rate). Every point reaches G2 on tune (0.962-0.983); unchanged choice (0.86, 0.82):
+  # tune early 0.9826, false_trigger 0.0000, wasted 0.2348, recall@10 1.0000, ttft_p50 388 ms.
   new_info_cos: 0.86      # PROVISIONAL when cos(Q_t, last dispatched) < new_info_cos
   stable_cos: 0.82        # COMMIT when Q_t is stable for stable_chunks chunks
   stable_chunks: 2

@@ -33,7 +33,7 @@ class BM25Config:
 
 @dataclass(frozen=True)
 class DenseConfig:
-    model_name: str = "BAAI/bge-small-en-v1.5"
+    model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_dim: int = 384
     normalize_embeddings: bool = True
     batch_size: int = 32
@@ -50,6 +50,9 @@ class RRFConfig:
 class SufficiencyConfig:
     dense_top1: float = 0.55
     coverage: float = 0.50
+    # An answered sub-intent is flagged uncertain when its query coverage is in [uncertain_low, uncertain_high).
+    uncertain_low: float = 0.50
+    uncertain_high: float = 0.70
 
 
 @dataclass(frozen=True)
@@ -281,8 +284,6 @@ class SlragConfig:
 
     enable_multi_intent: bool = True
     suppression_threshold: float = 0.45
-    uncertain_band_low: float = 0.50
-    uncertain_band_high: float = 0.70
 
     restart_on_late_detail: bool = False
     enable_refinement: bool = False  # Phase 7: route later content turns of a session through the delta planner

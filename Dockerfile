@@ -13,7 +13,12 @@ COPY pyproject.toml README.md ./
 COPY slrag ./slrag
 COPY config.yaml ./
 COPY data ./data
-RUN pip install -e . \
+COPY scripts/fetch_models.py ./scripts/fetch_models.py
+# CPU-only torch first (the default wheel pulls CUDA), then the package; the dense retrieval model is
+# downloaded at build time into /app/models and loaded offline at run time.
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install -e . \
+    && python scripts/fetch_models.py \
     && useradd --create-home --uid 1000 slrag \
     && mkdir -p /app/out \
     && chown -R slrag:slrag /app

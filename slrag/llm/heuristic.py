@@ -43,7 +43,10 @@ async def heuristic_delta_llm(prompt: str, schema: Dict[str, Any], context: Dict
     u = _core_lemmas(utterance)
     scores: List[Tuple[int, str]] = []
     for sub in context.get("sub_intents", []):
-        claim_text = " ".join(c["first_20_words"] for c in context.get("claims", []) if c["sub_intent_id"] == sub["id"])
+        claims = [c for c in context.get("claims", []) if c["sub_intent_id"] == sub["id"]]
+        # Claim openings plus the words of the documents they cite ("nx-feature-copilot§..." -> copilot).
+        claim_text = " ".join([c["first_20_words"] for c in claims]
+                              + [re.sub(r"[^A-Za-z0-9]+", " ", cite) for c in claims for cite in c.get("cites") or []])
         scores.append((len(u & (content_lemmas(sub["text"]) | content_lemmas(claim_text))), sub["id"]))
     top = max((s for s, _ in scores), default=0)
 

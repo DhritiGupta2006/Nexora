@@ -33,3 +33,6 @@ Thumbs.db
 !eval/scenarios/
 !eval/scenarios/**/
 !eval/scenarios/**/*.jsonl
+
+# Dense retrieval model (scripts/fetch_models.py)
+models/

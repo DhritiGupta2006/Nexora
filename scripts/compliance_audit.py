@@ -2,7 +2,8 @@
 """Compliance audit for the hard rules (Phase 10). Writes out/compliance.json and exits 1 on any FAIL.
 
 Six checks, each PASS/FAIL with the offending file:line for every finding:
-  1. corpus_isolation    the engine makes no network calls except the configured LLM endpoint; no
+  1. corpus_isolation    the engine makes no network calls except the configured LLM endpoint (model
+                         files load with local_files_only=True); no
                          web-search packages in the dependencies; every cite emitted in the test run
                          exists in the corpus index.
   2. no_hardcoding       no example strings from the brief, no corpus text (>= 8 consecutive words),
@@ -45,6 +46,7 @@ HARNESS_DIRS = {"eval", "replay", "server", "ui"}
 HARNESS_FILES = {"cli.py"}
 NETWORK_MODULES = {"httpx", "requests", "aiohttp", "urllib.request", "http.client", "socket", "websocket", "websockets"}
 NETWORK_ALLOWED = {"slrag/llm/ollama_client.py"}  # talks only to llm.ollama_url
+HUB_MODULES = {"sentence_transformers", "transformers", "huggingface_hub"}  # must load from the local model cache
 WEB_SEARCH_PACKAGES = {"duckduckgo-search", "duckduckgo_search", "googlesearch-python", "google-search-results", "serpapi",
                        "tavily-python", "tavily", "exa-py", "wikipedia", "bing-search", "brave-search", "searx", "newspaper3k"}
 AGENT_FRAMEWORKS = {"langchain", "langchain-core", "langchain-community", "langgraph", "llama-index", "llama_index", "autogen",
@@ -147,6 +149,12 @@ def check_corpus_isolation(telemetry: Path) -> Dict[str, Any]:
         for line, mod in imports(path):
             if mod in NETWORK_MODULES or mod.split(".")[0] in {"httpx", "requests", "aiohttp", "websocket"}:
                 findings.append(f"{rel(path)}:{line} imports network client '{mod}'")
+    for path in code_files():
+        if path.suffix != ".py":
+            continue
+        hub = [(line, mod) for line, mod in imports(path) if mod.split(".")[0] in HUB_MODULES]
+        if hub and "local_files_only=True" not in path.read_text(encoding="utf-8"):
+            findings.append(f"{rel(path)}:{hub[0][0]} loads '{hub[0][1]}' without local_files_only=True (could download at run time)")
     for name, where in dependency_names().items():
         if name in WEB_SEARCH_PACKAGES:
             findings.append(f"{where} declares web-search package '{name}'")

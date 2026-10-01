@@ -49,11 +49,12 @@ class FailClosedVerifier:
         )
 
     def check_semantic(self, claim_text: str, cited_text: str) -> CheckResult:
-        """2. Semantic Check: Cosine similarity between claim embedding and cited chunk embedding."""
+        """2. Semantic Check: cosine similarity between the claim and the cited text, taking the better of the
+        whole cited text and its best-matching sentence (a short claim drawn from one sentence of a long
+        chunk is otherwise diluted by the rest of the chunk)."""
         c_vec = generate_bge_small_embedding(claim_text)
-        d_vec = generate_bge_small_embedding(cited_text)
-
-        sim = float(np.dot(c_vec, d_vec))
+        passages = [cited_text] + [s for s in split_sentences(cited_text) if s.strip() and s.strip() != cited_text.strip()]
+        sim = max(float(np.dot(c_vec, generate_bge_small_embedding(p))) for p in passages)
         score = (sim + 1.0) / 2.0  # Normalize to [0, 1]
 
         passed = score >= self.config.semantic

@@ -17,7 +17,8 @@ dependencies = [
     "pyyaml>=6.0",
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
-    "httpx>=0.24.0"
+    "httpx>=0.24.0",
+    "sentence-transformers>=3.0"  # dense retrieval (all-MiniLM-L6-v2 on CPU); model: python scripts/fetch_models.py
 ]
 
 [project.optional-dependencies]

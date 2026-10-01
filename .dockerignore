@@ -9,6 +9,7 @@ docs
 out
 prompts
 scripts
+!scripts/fetch_models.py
 models
 bin
 telemetry.jsonl

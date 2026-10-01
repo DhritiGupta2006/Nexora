@@ -112,7 +112,7 @@ class Rewriter:
         if self.llm_fn is None:
             return self._keep_all(base, "no_llm", t0)
 
-        prompt = rewriter_prompt(constraint, claims_in, evidence_in, schema)
+        prompt = rewriter_prompt(constraint, claims_in, evidence_in, self.max_new_claims)
         context = {"constraint": constraint, "claims": claims_in, "evidence": evidence_in, "allowed_cites": cites,
                    "max_new_claims": self.max_new_claims}
         try:

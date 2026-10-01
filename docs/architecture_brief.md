@@ -2,7 +2,7 @@
 
 Streaming Live RAG: grounded answers over a fixed corpus, with retrieval that starts while the user is still speaking.
 
-Every number here comes from the frozen configuration (`config.yaml`, `frozen: true`, `cfg_hash 90e68e6053d494aa`) replayed on the test split. The sources are `out/summary.json` and `out/final_experiments.json`, and [benchmark_report.md](benchmark_report.md) has the full tables.
+Every number here comes from the frozen configuration (`config.yaml`, `frozen: true`, `cfg_hash e3745a51d783adef`) replayed on the test split. The sources are `out/summary.json` and `out/final_experiments.json`, and [benchmark_report.md](benchmark_report.md) has the full tables.
 
 ## 1. Problem
 
@@ -34,7 +34,7 @@ A voice or chat client streams a user's utterance as transcript chunks. A reques
                        v            utterance_end            v               |
  +------------------------------ turn engine --------------------------------+
  | planner: split into <= 4 sub-intents (merge cos 0.92), quotas 4 / 12      |
- | hybrid retrieval per sub-intent: BM25 + dense, RRF fusion (k = 60)        |
+ | hybrid retrieval per sub-intent: BM25 + MiniLM dense, RRF fusion (k = 60) |
  | sufficiency gate: dense_top1 >= 0.55 and coverage >= 0.50, else suppress  |
  | drafter (heuristic extractive, or Ollama) -> claims "text [doc§section]"  |
  | fail-closed verifier: hallucinated-id, lexical, semantic, coreference,    |
@@ -79,7 +79,8 @@ Each sub-intent gets its own retrieval, with a quota of 4 chunks per sub-intent 
 - **The verifier is fail-closed.** A claim is emitted only if all five checks pass:
   - the cited id was in the evidence (hallucinated-id);
   - lexical overlap with the cited text is at least 0.30;
-  - semantic similarity is at least 0.65;
+  - similarity of at least 0.65 to the cited text or its best-matching sentence (hashed n-gram vectors, a
+    surface-overlap measure; the retrieval model is not used here);
   - no unresolved coreference;
   - no contradiction with already-verified claims.
 - **The ledger.** Every claim is versioned in the claim ledger, together with its cites and history. A later constraint can keep, revise or retract a claim. Unaffected claims keep their hash: preservation is 1.0 on the test split.
@@ -91,9 +92,9 @@ Each sub-intent gets its own retrieval, with a quota of 4 chunks per sub-intent 
 |---|---|---|---|
 | Speculative retrieval before utterance end | Test TTFT p50 388 ms vs 485 ms (B1); early retrieval 0.950 | Wasted speculation 0.223; cost per turn 2.3× B1 | Evidence cache reuse (hit rate 0.458); max 2 PROVISIONAL per turn |
 | Pre-draft at COMMIT (A3 `full`) | Draft ready earlier when the query is stable | No TTFT gain over retrieval-only on this split (388 vs 385 ms); 63% of pre-draft tokens wasted | Can be switched off: `speculation.mode: retrieval_only` |
-| Fail-closed verifier | Groundedness 0.975, 0 hallucinated ids | Drops some true claims | Uncertainty items instead of silence |
-| Delta refinement on late details | 56% fewer retrieval calls than restarting | 3.9× more tokens than restarting: two JSON calls whose prompts carry claims, evidence and JSON schemas | See benchmark report, failure 4 |
-| Hybrid RRF retrieval | More robust than dense alone (recall@10 0.926 vs 0.809) | BM25 alone scores 0.989 with the current embedder | Failure 1: the dense side is a placeholder embedder |
+| Fail-closed verifier | Groundedness 1.000, 0 hallucinated ids | Untested against a generative drafter: the extractive stand-in only copies evidence sentences | Sentence-level semantic check so short true claims are not diluted by long chunks |
+| Delta refinement on late details | 56% fewer retrieval calls than restarting | 3.5× more tokens than restarting: two JSON calls whose prompts carry claims and evidence | JSON schemas removed from the prompts (−18.1% tokens); benchmark report, failure 3 |
+| Hybrid RRF retrieval (BM25 + all-MiniLM-L6-v2) | recall@10 1.000 vs 0.968 dense-only and 0.989 BM25-only | MiniLM model load at startup (CPU); torch in the image | Model fetched once (`scripts/fetch_models.py`), loaded offline |
 | Heuristic LLM backend by default | Deterministic, no GPU, reproducible numbers | Stand-in drafting quality | `llm.backend: ollama` for a real model; falls back per call if it is unreachable |
 
 Failure handling:
@@ -121,15 +122,18 @@ The **event contract** is defined as Pydantic models in `slrag/contracts/events.
   - `app`: Python 3.12 slim, a non-root user, uvicorn on :8000, with a healthcheck on `/health`.
   - `ollama`: an optional model server with a pinned image and a named model volume.
 
-  `make model` pulls `qwen2.5:3b` into the Ollama volume, and `make up` builds and starts everything.
+  The app image installs CPU-only torch and downloads `all-MiniLM-L6-v2` at build time. `make model` downloads the retrieval model for local runs and pulls `qwen2.5:3b` into the Ollama volume; `make up` builds and starts everything.
 - **Image contents.** The image contains only `slrag/`, `config.yaml`, `data/` and `pyproject.toml`. `.dockerignore` excludes `eval/`, `tests/`, `docs/`, `out/` and `scripts/`. `eval/` is mounted read-only at run time, only for the UI's scenario picker.
-- **Network.** The engine makes network calls only to the configured LLM URL. This is checked by the audit.
+- **Network.** The engine makes network calls only to the configured LLM URL, and the retrieval model loads with `local_files_only=True`. Both are checked by the audit.
 - **Auth.** `/ui/*` and `/api/*` use HTTP Basic auth: `admin` / `slrag` from `config.yaml`, which you can override with `SLRAG_UI_USERNAME` / `SLRAG_UI_PASSWORD`. `/ws/*` and `/health` are unauthenticated.
 - **Voice.** The UI's microphone uses the browser's Web Speech API, in Chrome or Edge, over localhost or HTTPS. The browser vendor's speech service transcribes the audio. The server only ever receives text.
 
 ## 9. Limitations (what we do not claim)
 
-- **Dense retrieval is a placeholder.** `slrag/retrieval/dense.py` projects hashed word and character n-grams into 384 dimensions; it is not a BGE model. This is why BM25 alone beats hybrid in A1.
+- **Two kinds of vectors.**
+  - Retrieval uses sentence-transformers `all-MiniLM-L6-v2` (384-d, CPU).
+  - The controller's query-stability test, the evidence-cache reuse test and the verifier's semantic check use a hashed n-gram vector, which measures surface overlap. Their thresholds were calibrated on it, so swapping in MiniLM there would need its own tune-split recalibration.
+- **The coverage gate over-suppresses paraphrases.** The sufficiency gate's coverage test suppresses some answerable requests worded with instruction verbs ("summarize the ... steps"). See benchmark report, failure 1.
 - **Latency is simulated.** Latency is virtual time from the replay latency model (retrieval 120 ms, draft 350 ms, ...), not hardware measurements.
 - **Cost is notional.** It is computed from token estimates and the configured per-1k prices; it is not a real-dollar cost.
 - **Groundedness means the verifier's rules.** It is the verifier's own score, with no human-labelled sample or external judge. It is not a general claim of "zero hallucination".

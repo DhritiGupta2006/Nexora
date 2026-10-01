@@ -2,7 +2,7 @@
 
 SL-RAG answers questions about a fixed document corpus while the user is still speaking or typing. Transcript chunks stream in over a WebSocket, and a retrieval controller decides on every chunk whether there is enough meaning to retrieve yet. Multi-part questions are split into sub-queries, and each is retrieved as soon as its clause is complete. When the utterance ends, the evidence is usually already there, so the first grounded sentence arrives sooner (test-split TTFT p50 388 ms vs 485 ms for a retrieve-at-the-end baseline, in virtual replay time).
 
-Answers are built only from retrieved evidence. Every claim cites a `doc§section` chunk, and a fail-closed verifier drops any claim it cannot ground in the chunk it cites (groundedness 0.975, 0 hallucinated ids). Parts of a question the corpus cannot answer are reported as uncertain instead of guessed. If the user adds a constraint later ("assume we're on the Enterprise plan"), only the affected claims are revised, and the rest of the answer is preserved unchanged. Every decision is emitted as telemetry, and a trace UI shows it live.
+Answers are built only from retrieved evidence. Every claim cites a `doc§section` chunk, and a fail-closed verifier drops any claim it cannot ground in the chunk it cites (groundedness 1.000, 0 hallucinated ids). Parts of a question the corpus cannot answer are reported as uncertain instead of guessed. If the user adds a constraint later ("assume we're on the Enterprise plan"), only the affected claims are revised, and the rest of the answer is preserved unchanged. Every decision is emitted as telemetry, and a trace UI shows it live.
 
 ## Quick start
 
@@ -12,7 +12,7 @@ make model && make up
 
 Then open **http://localhost:8000/ui/trace** and sign in as **admin / slrag**.
 
-- `make model` starts the Ollama service and pulls `qwen2.5:3b` into its volume. This is only needed for the real-LLM mode, but harmless otherwise.
+- `make model` downloads the retrieval model (`all-MiniLM-L6-v2`, about 90 MB) into `models/`, then starts the Ollama service and pulls `qwen2.5:3b` into its volume. Ollama is only needed for the real-LLM mode. The Docker build downloads the retrieval model itself.
 - `make up` builds and starts the app with `docker compose up --build`.
 - Without `make`, for example on Windows, run the same steps directly:
   ```bash
@@ -21,7 +21,8 @@ Then open **http://localhost:8000/ui/trace** and sign in as **admin / slrag**.
   ```
 - Without Docker:
   ```bash
-  pip install -e . && python -m uvicorn slrag.server.app:app --port 8000
+  pip install -e . && python scripts/fetch_models.py
+  python -m uvicorn slrag.server.app:app --port 8000
   ```
 
 In the UI, pick a scenario under **New Run** and press **Run** to replay it. Or drop a telemetry `.jsonl` file onto the page. Press `?` for the keyboard shortcuts.
@@ -60,7 +61,7 @@ python scripts/compliance_audit.py
 | `run_experiments.py` (`make experiments`) | `out/final_experiments.json` | ablations A1–A5; also served to the UI's Metrics tab |
 | `compliance_audit.py` (`make audit`) | `out/compliance.json` | the six compliance checks |
 
-The test split is the evaluation split. Thresholds are calibrated on the tune split (`scripts/calibrate.py --split tune`) and frozen before the test run.
+The test split is the evaluation split. Thresholds are calibrated on the tune split (`scripts/calibrate.py --split tune` for the controller, `scripts/calibrate_uncertainty.py` for the uncertainty flag) and frozen before the test run.
 
 ## Run tests
 
@@ -68,20 +69,20 @@ The test split is the evaluation split. Thresholds are calibrated on the tune sp
 make test        # or: pytest tests/ -q
 ```
 
-## Results (test split, frozen config `cfg_hash 90e68e6053d494aa`)
+## Results (test split, frozen config `cfg_hash e3745a51d783adef`)
 
 | Gate | Condition | Measured | |
 |---|---|---|---|
-| G1 recall improvement | recall@10 Ours ≥ B1 | 0.926 vs 0.846 | ✅ |
+| G1 recall improvement | recall@10 Ours ≥ B1 | 1.000 vs 0.962 | ✅ |
 | G2 early retrieval | early-retrieval rate ≥ 0.80 | 0.950 | ✅ |
-| G3 groundedness preservation | groundedness Ours ≥ B1 | 0.975 vs 0.956 | ✅ |
-| G4 grounding | groundedness ≥ 0.85, hallucinated-ID rate = 0 | 0.975, 0.000 | ✅ |
+| G3 groundedness preservation | groundedness Ours ≥ B1 | 1.000 vs 1.000 | ✅ |
+| G4 grounding | groundedness ≥ 0.85, hallucinated-ID rate = 0 | 1.000, 0.000 | ✅ |
 | G5 late-detail refinement | preservation = 1.0, no restarts, full lineage | 1.000, 0, 1.000 | ✅ |
 | G6 trace coverage | coverage = 1.0 | 1.000 | ✅ |
 
 Latency is virtual replay time and cost is notional.
 
-The dense retriever is a hashed n-gram placeholder, not a neural embedding model; the ablations show BM25 alone retrieves better. The benchmark report covers this and the other limits.
+Retrieval fuses BM25 with sentence-transformers `all-MiniLM-L6-v2` embeddings (recall@10 1.000; dense-only 0.968, BM25-only 0.989). The benchmark report lists the remaining failures and limits.
 
 ## Documentation
 
@@ -96,7 +97,7 @@ slrag/          engine: gateway, control (T0/T1/T2), plan, retrieval, pipeline, 
 config.yaml     the single source of every threshold (frozen)
 data/           corpus JSON + prebuilt index
 eval/scenarios/ tune / test scenario splits (evaluation only; not in the Docker image)
-scripts/        calibrate, run_experiments, compliance_audit, validate_scenarios
+scripts/        fetch_models, calibrate, calibrate_uncertainty, run_experiments, compliance_audit, validate_scenarios
 tests/          pytest suite
 docs/           architecture brief, benchmark report
 ```

@@ -45,11 +45,13 @@ class DeltaPlan:
 
 
 def planner_inputs(ledger: Any) -> Dict[str, List[Dict[str, Any]]]:
-    """Sub-intents [{id, text}] and claim one-liners [{claim_id, sub_intent_id, first_20_words}] from a ledger."""
+    """Sub-intents [{id, text}] and claim one-liners [{claim_id, sub_intent_id, first_20_words, cites}] from a
+    ledger. The cites (doc§section ids) tell the planner which document each claim came from."""
     return {
         "sub_intents": [{"id": s.id, "text": s.text} for s in ledger.sub_intents],
         "claims": [
-            {"claim_id": c.claim_id, "sub_intent_id": c.sub_intent_id, "first_20_words": first_words(c.text)}
+            {"claim_id": c.claim_id, "sub_intent_id": c.sub_intent_id, "first_20_words": first_words(c.text),
+             "cites": list(c.doc_ids)}
             for c in ledger.get_verified_claims()
         ],
     }
@@ -76,7 +78,7 @@ class DeltaPlanner:
         if self.llm_fn is None:
             return self._fallback(utterance, "no_llm", t0)
 
-        prompt = delta_planner_prompt(utterance, sub_intents, claims, schema)
+        prompt = delta_planner_prompt(utterance, sub_intents, claims)
         context = {"utterance": utterance, "sub_intents": sub_intents, "claims": claims, "max_queries": self.max_queries}
         try:
             res = await json_call(self.llm_fn, prompt, schema, context, timeout_s=self.timeout_s)

@@ -4,7 +4,8 @@ PYTHON ?= python
 
 .PHONY: model up down test experiments audit replay
 
-model:  ## start the ollama service and pull the drafting model into its volume
+model:  ## download the dense retrieval model into models/, start ollama, pull the drafting model
+	$(PYTHON) scripts/fetch_models.py
 	docker compose up -d ollama
 	docker compose exec ollama ollama pull $(MODEL)
 

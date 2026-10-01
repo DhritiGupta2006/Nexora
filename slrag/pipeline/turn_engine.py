@@ -661,7 +661,7 @@ class TurnEngine:
             )
             self.suppression: Optional[SuppressionController] = SuppressionController(
                 sufficiency_gate=sufficiency, bus=bus, clock=clock,
-                uncertain_band=(config.uncertain_band_low, config.uncertain_band_high),
+                uncertain_band=(app.sufficiency.uncertain_low, app.sufficiency.uncertain_high),
             )
             self.reconciler: Optional[PlanReconciler] = PlanReconciler(bus=bus, clock=clock)
         else:

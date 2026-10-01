@@ -8,7 +8,7 @@ import yaml
 
 from slrag.config import DEFAULT_CONFIG, DEFAULT_CONFIG_PATH, config_from_dict, load_config
 
-FROZEN_CFG_HASH = "90e68e6053d494aa"  # out/final_experiments.json "cfg_hash" (test split)
+FROZEN_CFG_HASH = "e3745a51d783adef"  # out/final_experiments.json "cfg_hash" (test split)
 FROZEN_THRESHOLDS = {
     ("controller", "mode"): "cascade",
     ("controller", "new_info_cos"): 0.86,
@@ -17,6 +17,9 @@ FROZEN_THRESHOLDS = {
     ("cache", "reuse_cos"): 0.82,
     ("sufficiency", "dense_top1"): 0.55,
     ("sufficiency", "coverage"): 0.50,
+    ("sufficiency", "uncertain_low"): 0.50,
+    ("sufficiency", "uncertain_high"): 0.50,
+    ("dense", "model_name"): "sentence-transformers/all-MiniLM-L6-v2",
     ("verifier", "lexical"): 0.30,
     ("verifier", "semantic"): 0.65,
     ("speculation", "mode"): "full",
