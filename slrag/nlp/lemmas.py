@@ -163,7 +163,7 @@ class CorpusVocab:
 
 
 def extract_slots(text: str) -> Dict[str, str]:
-    """Typed slot values used for cache conflict checks, e.g. {"CARDINAL": "30", "ENTITY": "pune"}.
+    """Typed slot values used for cache conflict checks, e.g. {"CARDINAL": "30", "ENTITY": "growth"}.
 
     Multiple values of one type are joined in sorted order so two queries conflict whenever
     they carry a different set of values for the same type.

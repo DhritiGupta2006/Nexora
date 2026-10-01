@@ -64,11 +64,12 @@ def build_index(app: AppConfig, corpus_paths: Iterable[Path] = DEFAULT_CORPORA) 
 
 
 class RetrieverAdapter:
-    """retrieve(query) -> fused top-k SearchResults (dense-only when the BM25 weight is 0)."""
+    """retrieve(query) -> fused top-k SearchResults (dense-only when the BM25 weight is 0,
+    BM25-only when the dense weight is 0)."""
 
     def __init__(self, engine: HybridRetrievalEngine, cfg: SlragConfig):
         self.engine = engine
-        self.mode = "dense" if cfg.bm25_weight == 0 else "hybrid"
+        self.mode = "dense" if cfg.bm25_weight == 0 else "bm25" if cfg.dense_weight == 0 else "hybrid"
         self.top_k = cfg.top_k
 
     def retrieve(self, query: str) -> List[SearchResult]:

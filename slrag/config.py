@@ -201,9 +201,14 @@ class AppConfig:
     refinement: RefinementConfig = field(default_factory=RefinementConfig)
     speculation: SpeculationConfig = field(default_factory=SpeculationConfig)
     ui: UIConfig = field(default_factory=UIConfig)
+    # Top-level `frozen: true` in config.yaml marks the final, measured configuration. It is
+    # metadata, not a setting: it is left out of to_dict() and therefore out of cfg_hash.
+    frozen: bool = field(default=False, compare=False)
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        data = asdict(self)
+        data.pop("frozen", None)
+        return data
 
     @property
     def cfg_hash(self) -> str:
@@ -217,9 +222,10 @@ def config_from_dict(data: Dict[str, Any]) -> AppConfig:
 
     Unknown sections or keys raise ValueError so a typo in config.yaml cannot silently fall back to a default.
     """
-    sections = {f.name: f for f in fields(AppConfig)}
-    kwargs: Dict[str, Any] = {}
-    for section, values in (data or {}).items():
+    sections = {f.name: f for f in fields(AppConfig) if f.name != "frozen"}
+    data = dict(data or {})
+    kwargs: Dict[str, Any] = {"frozen": bool(data.pop("frozen", False))}
+    for section, values in data.items():
         if section not in sections:
             raise ValueError(f"Unknown config section '{section}'. Expected one of {sorted(sections)}.")
         section_cls = sections[section].default_factory  # type: ignore[misc]
@@ -240,7 +246,12 @@ def load_config(path: Optional[Union[str, Path]] = None) -> AppConfig:
         logger.warning("config.yaml not found at %s; using built-in defaults.", config_path)
         return AppConfig()
     with open(config_path, "r", encoding="utf-8") as f:
-        return config_from_dict(yaml.safe_load(f) or {})
+        data = yaml.safe_load(f) or {}
+    # Deployment-only overrides (Docker Compose points the app at the ollama service).
+    for env, key in (("SLRAG_LLM_BACKEND", "backend"), ("SLRAG_OLLAMA_URL", "ollama_url")):
+        if os.environ.get(env):
+            data.setdefault("llm", {})[key] = os.environ[env]
+    return config_from_dict(data)
 
 
 # Default singleton instance, loaded from config.yaml

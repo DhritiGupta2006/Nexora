@@ -137,3 +137,9 @@ speculation:
 ui:
   username: admin
   password: slrag
+
+
+# Frozen for the final evaluation (Phase 10): every number in docs/ and out/final_experiments.json was
+# measured with these values. Do not change a threshold without re-calibrating on the tune split and
+# re-running the whole final experiment. tests/test_config_freeze.py pins the resulting cfg_hash.
+frozen: true

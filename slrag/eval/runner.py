@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+from slrag.config import DEFAULT_CONFIG
 from slrag.eval.clock import DEFAULT_LATENCY, ReplayClock
 from slrag.eval.gates import GateEvaluator
 from slrag.eval.report import ReportGenerator
@@ -323,7 +324,8 @@ class ReplayRunner:
                 "overrides": self.config_overrides,
             }
             counts = self._scenario_counts()
-            cal_config.update({"split": self.split, "category": self.category, "replayed_scenarios": len(scenarios)})
+            cal_config.update({"split": self.split, "category": self.category, "replayed_scenarios": len(scenarios),
+                               "cfg_hash": DEFAULT_CONFIG.cfg_hash, "config_frozen": DEFAULT_CONFIG.frozen})
             ReportGenerator.write_summary(str(out_p.parent / "summary.json"), self.mode, metrics, gates, counts, cal_config,
                                           baseline_metrics, experiments)
             ReportGenerator.write_markdown_report(str(out_p.parent / "report.md"), self.mode, metrics, gates, counts, cal_config,

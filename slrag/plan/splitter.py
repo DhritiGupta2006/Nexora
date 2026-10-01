@@ -61,7 +61,7 @@ def _split_clauses(buffer: str) -> List[str]:
 
 
 def _split_np_list(clause: str) -> Optional[SplitResult]:
-    """'I need the cancellation policy and the catering options' -> one part per noun phrase."""
+    """'I need the cancellation policy and the badge printing options' -> one part per noun phrase."""
     m = NP_VERB_RE.match(clause.rstrip("?.! "))
     if not m:
         return None
